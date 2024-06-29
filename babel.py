@@ -6,6 +6,7 @@ from alive_progress import alive_bar
 import storage
 import generators
 
+
 class Babel:
 
     def __init__(self):
@@ -95,17 +96,6 @@ class Babel:
         self.page = 1
         self.title = ""
         self.hex_complete = False
-
-    def remove_book_title(self):
-        book = open('old_outputs/book.txt').readlines()
-        open('old_outputs/book.txt', 'w').writelines(book[2:-1])
-
-    def parse_book(self):
-        book = open('old_outputs/book.txt').read().replace('\n', '')
-        current_page = 1
-        while current_page <= 410:
-            self.book_text.append(book[current_page * 3200 - 3200 : current_page * 3200])
-            current_page += 1
 
     def parse_book_string(self, book_string):
         book = book_string.replace('\n', '')
@@ -226,37 +216,6 @@ class Babel:
         a_string = a_string.strip()
         first_char = a_string[:1]
         return set(self.word_list[first_char]).intersection(a_string.split())
-
-    def find_string_characteristics_on_page(self, page):
-
-        pagetext = self.book_text[page-1]
-        print(self.print_link())
-        most_common = Counter(pagetext).most_common(5)
-        print(most_common)
-        sequence_info = self.find_max_sequence(pagetext)
-        print(sequence_info[0])
-        print("Max Sequence Size: " + str(sequence_info[1]))
-        return sequence_info
-
-    def find_max_sequence(self, text):
-        last_char = ""
-        current_seq_len = 0
-        max_seq_len = 0
-        max_sequences = []
-
-        for c in text:
-            if c == last_char:
-                current_seq_len += 1
-                if current_seq_len > max_seq_len:
-                    max_seq_len = current_seq_len
-                    max_sequences = []
-                    max_sequences.append(last_char * current_seq_len)
-                elif current_seq_len == max_seq_len:
-                    max_sequences.append(last_char * current_seq_len)
-            else:
-                current_seq_len = 1
-                last_char = c
-        return max_sequences, max_seq_len
 
     def calculate_next_book(self):
         self.volume = int(self.volume)

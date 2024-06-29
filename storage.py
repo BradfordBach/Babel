@@ -4,6 +4,7 @@ db = sqlite3.connect("babel.db")
 db.row_factory = sqlite3.Row
 cur = db.cursor()
 
+
 def handle_sql_hex(hex):
     cur.execute("CREATE TABLE IF NOT EXISTS hexes(hex_name)")
     result = cur.execute("SELECT ROWID FROM hexes WHERE hex_name = ?", (hex, ))

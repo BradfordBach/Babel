@@ -14,7 +14,7 @@ EXTREMELY unlikely you will find anything on your own.
 
 This program attempts to automate the process of looking through millions of books of gibberish. It will first download
 a book using an API call to directly download it, then using an english language word list, it will search
-through hexes and provide output via the console window as well as into a MySQL database. It primarily searches 
+through hexes and provide output via the console window as well as into a SQLite database. It primarily searches 
 for words that are next to each other, while also keeping track of the largest word it found.
 
 ## Developer notes:
