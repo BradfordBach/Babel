@@ -23,14 +23,14 @@ discovery, and to otherwise amuse myself by coding. I never intended the code to
 interest in using such a program, I have decided to make steps to get it out in the open. 
 
 There will be frequent changes in the coming weeks/months as I work on getting this repository to be public facing, and 
-to make it more user-friendly in general. As such, instructions to run this program will be forthcoming, since as of now
-it requires setting up a MySQL database to run.
+to make it more user-friendly in general. As such, instructions to run this program will be forthcoming, ~~since as of now
+it requires setting up a MySQL database to run.~~
 
 ## Roadmap
 
 0. Code cleanup and refactoring
-1. Allow for easy running of scripts for non-technical users. This will likely include a way to store results that does 
-not require MySQL.
+1. Allow for easy running of scripts for non-technical users. ~~This will likely include a way to store results that does 
+not require MySQL.~~
 2. Better reporting in general, ideally with some fancy local website creation, or something to that effect.
 3. More search options
 
