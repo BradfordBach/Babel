@@ -56,9 +56,9 @@ class Babel:
         while self.volume <= 32 and self.shelf == shelf and not self.hex_complete:
             self.parse_book_string(self.download_book(hex, wall, shelf))
             found_words, largest_word = self.find_consecutive_words()
-            if not storage.handle_mysql_page(self.title_id, found_words):
+            if not storage.handle_sql_page(self.title_id, found_words):
                 print("Page already exists in db: " + self.get_book_location())
-            storage.mysql_largest_book_word(self.title_id, largest_word)
+            storage.sql_largest_book_word(self.title_id, largest_word)
             consecutive_words, word_sets, word_list = self.get_max_consecutive_words_for_book(found_words)
             print("Title: " + str(self.title),
                   "\nConsecutive words: " + str(consecutive_words),
@@ -72,7 +72,7 @@ class Babel:
         if not hex:
             hex = generators.generate_animal_hex()
         self.hex = hex
-        self.hex_id = storage.handle_mysql_hex(self.hex)
+        self.hex_id = storage.handle_sql_hex(self.hex)
         if not wall and not shelf and not volume:
             self.reset_default_hex_values()
         else:  # Starting at different location
@@ -117,8 +117,8 @@ class Babel:
     def find_consecutive_words(self):
 
         consecutive_words = []
-        self.title_id = storage.handle_mysql_title(self.title, self.hex_id, self.hex,
-                                                   self.wall, self.shelf, self.volume)
+        self.title_id = storage.handle_sql_title(self.title, self.hex_id, self.hex,
+                                                 self.wall, self.shelf, self.volume)
         with alive_bar(410, title=self.get_book_location()) as bar:
             book_largest_word = {"page": None, "word": ""}
             for page_number, page_text in enumerate(self.book_text, start=1):
