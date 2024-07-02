@@ -41,42 +41,49 @@ def handle_sql_title(title, hex_id, hex, wall, shelf, volume):
         raise Exception("Title exists in hexes table more than once!")
 
 
-def handle_sql_page(title_id, found_words):
-    cur.execute("""CREATE TABLE IF NOT EXISTS page(rowid INTEGER PRIMARY KEY, title, page_number, num_consecutive_words,
-                num_word_sets, words, largest_word)""")
-    for page_text_info in found_words:
-        result = cur.execute("SELECT * FROM page WHERE title = ? AND page_number = ?",
-                             (title_id, int(page_text_info["Page number"])))
-        page = result.fetchall()
-        if len(page) == 0:
-            cur.execute("""INSERT INTO page (title, page_number, num_consecutive_words, num_word_sets,
-                            words, largest_word) values (?, ?, ?, ?, ?, ?)""",
-                        (title_id,
-                         int(page_text_info["Page number"]),
-                         int(page_text_info["Consecutive count"]),
-                         len(page_text_info["Consecutive word sets"]),
-                         str(page_text_info["Consecutive word sets"]),
-                         str(page_text_info["Largest word"]))
-                        )
-            db.commit()
-            return True
-        else:
-            return False
-
-
-def sql_largest_book_word(title_id, largest_word):
-    result = cur.execute("SELECT * FROM page WHERE title = ? AND page_number = ?",
-                         (title_id, int(largest_word["page"])))
+def handle_sql_page(title_id, page_number):
+    cur.execute("""CREATE TABLE IF NOT EXISTS pages(rowid INTEGER PRIMARY KEY, title_id, page_number)""")
+    result = cur.execute("SELECT * FROM pages WHERE title_id = ? and page_number = ?",
+                         (title_id, page_number))
     page = result.fetchall()
     if len(page) == 0:
-        cur.execute("INSERT INTO page (title, page_number, largest_word) values (?, ?, ?)",
-                    (title_id, int(largest_word["page"]), largest_word["word"]))
+        cur.execute("INSERT INTO pages (title_id, page_number) values (?, ?)", (title_id, page_number))
         db.commit()
+        return cur.lastrowid
     elif len(page) == 1:
-        cur.execute("UPDATE page SET largest_word = ? where rowid = ?",
-                    (largest_word["word"], page[0]["rowid"]))
-        db.commit()
+        return page[0]["rowid"]
+    else:
+        raise Exception("Page exists in pages table more than once!")
 
+
+def handle_sql_consecutive_words(page_id, page_info):
+    cur.execute("""CREATE TABLE IF NOT EXISTS consecutive_words(rowid INTEGER PRIMARY KEY, page_id,
+                num_consecutive_words, num_word_sets, words)""")
+    result = cur.execute("SELECT * FROM consecutive_words WHERE page_id = ?", (page_id, ))
+    page = result.fetchall()
+    if len(page) == 0:
+        cur.execute("""INSERT INTO consecutive_words (page_id, num_consecutive_words, num_word_sets,
+                        words) values (?, ?, ?, ?)""",
+                    (page_id,
+                     int(page_info["Consecutive count"]),
+                     len(page_info["Consecutive word sets"]),
+                     str(page_info["Consecutive word sets"]))
+                    )
+        db.commit()
+        return True
+    else:
+        return False
+
+def sql_largest_word_on_page(page_id, largest_words):
+    cur.execute("CREATE TABLE IF NOT EXISTS page_words(rowid INTEGER PRIMARY KEY, page_id, length, word)")
+    result = cur.execute("SELECT * FROM page_words WHERE page_id = ?", (page_id, ))
+    page = result.fetchall()
+    if len(page) == 0:
+        if len(largest_words) > 0:
+            for word in largest_words:
+                cur.execute("INSERT INTO page_words (page_id, length, word) values (?, ?, ?)",
+                            (page_id, len(word), word))
+                db.commit()
 
 def significant_title_entry(word_string, title_id):
     cur.execute("CREATE TABLE IF NOT EXISTS significant_titles(rowid INTEGER PRIMARY KEY, words, title)")

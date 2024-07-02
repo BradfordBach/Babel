@@ -68,17 +68,14 @@ class Babel:
     def search_shelf_for_words(self, hex, wall, shelf):
         while self.volume <= 32 and self.shelf == shelf and not self.hex_complete:
             self.parse_book_string(self.download_book(hex, wall, shelf))
-            found_words, largest_word = self.find_consecutive_words()
-            if not storage.handle_sql_page(self.title_id, found_words):
-                print("Page already exists in db: " + self.get_book_location())
-            storage.sql_largest_book_word(self.title_id, largest_word)
-            consecutive_words, word_sets, word_list = self.get_max_consecutive_words_for_book(found_words)
+            largest_word = self.find_consecutive_words()
+            #consecutive_words, word_sets, word_list = self.get_max_consecutive_words_for_book(found_words)
             print("Book Location: " + self.get_book_location(),
                   "\nBook Title: " + '\x1B[3m' + str(self.title) + '\x1B[0m',
-                  "\nConsecutive words: " + str(consecutive_words),
-                  "| Word sets: " + str(word_sets),
-                  "| Word list: " + str(word_list),
-                  "| Largest word: pg. " + str(largest_word["page"]) + ", " + str(largest_word["word"]),
+                  #"\nConsecutive words: " + str(consecutive_words),
+                  #"| Word sets: " + str(word_sets),
+                  #"| Word list: " + str(word_list),
+                  "\nLargest word: pg. " + str(largest_word["page"]) + ", " + str(largest_word["words"]),
                   "\n")
             self.calculate_next_book()
 
@@ -121,22 +118,28 @@ class Babel:
 
     def find_consecutive_words(self):
 
-        consecutive_words = []
         self.title_id = storage.handle_sql_title(self.title, self.hex_id, self.hex,
                                                  self.wall, self.shelf, self.volume)
-        book_largest_word = {"page": None, "word": ""}
+        book_largest_word = {"page": None, "words": []}
         for page_number, page_text in enumerate(self.book_text, start=1):
 
             page_info = self.search_page_for_words(page_number, page_text, split_type="space")
 
-            if page_info["Consecutive count"] > 1:
-                consecutive_words.append(page_info)
+            if page_info["Largest words"]:
+                if page_info["Consecutive count"] > 2 or len(page_info["Largest words"][0]) > 3:
+                    page_id = storage.handle_sql_page(self.title_id, page_number)
+                    if page_id and page_info["Consecutive count"] > 2:
+                        storage.handle_sql_consecutive_words(page_id, page_info)
+                    if page_id and len(page_info["Largest words"][0]) > 3:
+                        storage.sql_largest_word_on_page(page_id, page_info["Largest words"])
 
-            if len(page_info["Largest word"]) > len(book_largest_word["word"]):
-                book_largest_word.update({"page": page_number, "word": page_info["Largest word"]})
+                if book_largest_word["words"]:
+                    if len(page_info["Largest words"][0]) > len(book_largest_word["words"][0]):
+                        book_largest_word.update({"page": page_number, "words": page_info["Largest words"]})
+                else:
+                    book_largest_word.update({"page": page_number, "words": page_info["Largest words"]})
 
-
-        return consecutive_words, book_largest_word
+        return book_largest_word
 
     def search_page_for_words(self, page_number, page_text, split_type="space"):
         # Lowest level function for searching for words on a single page, returns a dict of the page number,
@@ -147,7 +150,7 @@ class Babel:
         consecutive_words_text = []
         best_consecutive_words_count = 0
         best_consecutive_words_text = []
-        largest_word = ""
+        largest_words = []
 
         if split_type == "space":
             split_page_text = page_text.split(" ")
@@ -164,8 +167,15 @@ class Babel:
                     if words_in_potential_word:
                         consecutive_words_count += 1
                         consecutive_words_text.append(potential_word)
-                        if len(potential_word) > len(largest_word):
-                            largest_word = potential_word
+                        if largest_words:
+                            if len(potential_word) > len(largest_words[0]):
+                                largest_words.clear()
+                                largest_words.append(potential_word)
+                            elif len(potential_word) == len(largest_words[0]):
+                                largest_words.append(potential_word)
+                        else:
+                            largest_words.append(potential_word)
+
                     else:
                         if consecutive_words_count > 1:
                             if consecutive_words_count > best_consecutive_words_count:
@@ -181,7 +191,7 @@ class Babel:
         page_text_info = {"Page number": page_number,
                           "Consecutive count": best_consecutive_words_count,
                           "Consecutive word sets": best_consecutive_words_text,
-                          "Largest word": largest_word}
+                          "Largest words": largest_words}
 
         return page_text_info
 
