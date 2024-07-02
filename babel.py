@@ -73,11 +73,13 @@ class Babel:
                 print("Page already exists in db: " + self.get_book_location())
             storage.sql_largest_book_word(self.title_id, largest_word)
             consecutive_words, word_sets, word_list = self.get_max_consecutive_words_for_book(found_words)
-            print("Title: " + str(self.title),
+            print("Book Location: " + self.get_book_location(),
+                  "\nBook Title: " + '\x1B[3m' + str(self.title) + '\x1B[0m',
                   "\nConsecutive words: " + str(consecutive_words),
                   "| Word sets: " + str(word_sets),
                   "| Word list: " + str(word_list),
-                  "| Largest word: pg. " + str(largest_word["page"]) + ", " + str(largest_word["word"]))
+                  "| Largest word: pg. " + str(largest_word["page"]) + ", " + str(largest_word["word"]),
+                  "\n")
             self.calculate_next_book()
 
     def search_hex(self, hex=None, wall=None, shelf=None, volume=None):
@@ -88,6 +90,7 @@ class Babel:
         self.hex_id = storage.handle_sql_hex(self.hex)
         if not wall and not shelf and not volume:
             self.reset_default_hex_values()
+            print("Searching hex:", hex)
         else:  # Starting at different location
             if wall:
                 self.wall = wall
@@ -121,20 +124,17 @@ class Babel:
         consecutive_words = []
         self.title_id = storage.handle_sql_title(self.title, self.hex_id, self.hex,
                                                  self.wall, self.shelf, self.volume)
-        with alive_bar(410, title=self.get_book_location()) as bar:
-            book_largest_word = {"page": None, "word": ""}
-            for page_number, page_text in enumerate(self.book_text, start=1):
+        book_largest_word = {"page": None, "word": ""}
+        for page_number, page_text in enumerate(self.book_text, start=1):
 
-                page_info = self.search_page_for_words(page_number, page_text, split_type="space")
+            page_info = self.search_page_for_words(page_number, page_text, split_type="space")
 
-                if page_info["Consecutive count"] > 1:
-                    consecutive_words.append(page_info)
+            if page_info["Consecutive count"] > 1:
+                consecutive_words.append(page_info)
 
-                if len(page_info["Largest word"]) > len(book_largest_word["word"]):
-                    book_largest_word.update({"page": page_number, "word": page_info["Largest word"]})
+            if len(page_info["Largest word"]) > len(book_largest_word["word"]):
+                book_largest_word.update({"page": page_number, "word": page_info["Largest word"]})
 
-                bar.text(self.title)
-                bar()
 
         return consecutive_words, book_largest_word
 

@@ -10,7 +10,6 @@ def handle_sql_hex(hex):
     result = cur.execute("SELECT ROWID FROM hexes WHERE hex_name = ?", (hex, ))
     hex_row_id = result.fetchall()
     if len(hex_row_id) == 0:
-        print("Adding hex into hex table")
         cur.execute("INSERT INTO hexes (hex_name) VALUES(?)", (hex, ))
         db.commit()
         hex_id = cur.lastrowid
