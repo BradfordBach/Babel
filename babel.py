@@ -81,6 +81,7 @@ class Babel:
 
     def search_hex(self, hex=None, wall=None, shelf=None, volume=None):
         # Search a specific location for both titles and words
+        storage.create_sql_tables()
         if not hex:
             hex = generators.generate_animal_hex()
         self.hex = hex
@@ -126,12 +127,10 @@ class Babel:
             page_info = self.search_page_for_words(page_number, page_text, split_type="space")
 
             if page_info["Largest words"]:
-                if page_info["Consecutive count"] > 2 or len(page_info["Largest words"][0]) > 3:
-                    page_id = storage.handle_sql_page(self.title_id, page_number)
-                    if page_id and page_info["Consecutive count"] > 2:
-                        storage.handle_sql_consecutive_words(page_id, page_info)
-                    if page_id and len(page_info["Largest words"][0]) > 3:
-                        storage.sql_largest_word_on_page(page_id, page_info["Largest words"])
+                if page_info["Consecutive count"] > 1:
+                    storage.handle_sql_consecutive_words(self.title_id, page_info)
+                if len(page_info["Largest words"][0]) > 2:
+                    storage.sql_largest_word_on_page(self.title_id, page_number, page_info["Largest words"])
 
                 if book_largest_word["words"]:
                     if len(page_info["Largest words"][0]) > len(book_largest_word["words"][0]):
@@ -139,6 +138,7 @@ class Babel:
                 else:
                     book_largest_word.update({"page": page_number, "words": page_info["Largest words"]})
 
+        storage.sql_call_commit()
         return book_largest_word
 
     def search_page_for_words(self, page_number, page_text, split_type="space"):
