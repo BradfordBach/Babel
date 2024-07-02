@@ -68,15 +68,21 @@ class Babel:
     def search_shelf_for_words(self, hex, wall, shelf):
         while self.volume <= 32 and self.shelf == shelf and not self.hex_complete:
             self.parse_book_string(self.download_book(hex, wall, shelf))
-            largest_word = self.find_consecutive_words()
+            largest_words = self.find_consecutive_words()
             #consecutive_words, word_sets, word_list = self.get_max_consecutive_words_for_book(found_words)
             print("Book Location: " + self.get_book_location(),
-                  "\nBook Title: " + '\x1B[3m' + str(self.title) + '\x1B[0m',
+                  "\nBook Title: " + '\x1B[3m' + str(self.title) + '\x1B[0m')
                   #"\nConsecutive words: " + str(consecutive_words),
                   #"| Word sets: " + str(word_sets),
                   #"| Word list: " + str(word_list),
-                  "\nLargest word: pg. " + str(largest_word["page"]) + ", " + str(largest_word["words"]),
-                  "\n")
+            print("Largest words:")
+            if len(largest_words) > 1:
+                for word in largest_words:
+                    print("pg. " + str(word[0]) + ": " + str(word[1]), end=" | ")
+            else:
+                print("pg. " + str(largest_words[0][0]) + ": " + str(largest_words[0][1]), end="")
+
+            print("\n")
             self.calculate_next_book()
 
     def search_hex(self, hex=None, wall=None, shelf=None, volume=None):
@@ -121,7 +127,7 @@ class Babel:
 
         self.title_id = storage.handle_sql_title(self.title, self.hex_id, self.hex,
                                                  self.wall, self.shelf, self.volume)
-        book_largest_word = {"page": None, "words": []}
+        book_largest_word = []
         for page_number, page_text in enumerate(self.book_text, start=1):
 
             page_info = self.search_page_for_words(page_number, page_text, split_type="space")
@@ -132,11 +138,16 @@ class Babel:
                 if len(page_info["Largest words"][0]) > 2:
                     storage.sql_largest_word_on_page(self.title_id, page_number, page_info["Largest words"])
 
-                if book_largest_word["words"]:
-                    if len(page_info["Largest words"][0]) > len(book_largest_word["words"][0]):
-                        book_largest_word.update({"page": page_number, "words": page_info["Largest words"]})
-                else:
-                    book_largest_word.update({"page": page_number, "words": page_info["Largest words"]})
+                for word in page_info["Largest words"]:
+                    if not book_largest_word:
+                        book_largest_word.append((page_number, word))
+                    elif len(book_largest_word[0][1]) == len(word):
+                        book_largest_word.append((page_number, word))
+                    elif len(book_largest_word[0][1]) < len(word):
+                        book_largest_word.clear()
+                        book_largest_word.append((page_number, word))
+                    else:
+                        break
 
         storage.sql_call_commit()
         return book_largest_word
