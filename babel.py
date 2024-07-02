@@ -1,6 +1,7 @@
 import urllib
 from urllib.request import urlopen
 from urllib.parse import urlencode
+from urllib.error import URLError, HTTPError
 from collections import Counter
 from alive_progress import alive_bar
 import storage
@@ -46,11 +47,22 @@ class Babel:
         headers = {'User-Agent':user_agent,}
 
         request = urllib.request.Request(full_url, None, headers)
-        response = urlopen(request).read()
-        response = response.decode('ascii').split(';')
-        response = response[0].replace("\n\n\nBook Location:" + self.hex + "-w" + str(self.wall)
-                                       + "-s" + str(self.shelf) + "-v" + str(self.volume) + "\n", "")
-        response = response.split("\n", 2)[2]
+        with alive_bar(title="Downloading next book...") as bar:
+            try:
+                response = urlopen(request).read()
+            except HTTPError as e:
+                print('HTTPError code: ', e.code)
+                exit()
+            except URLError as e:
+                print('Reason: ', e.reason)
+                exit()
+
+            response = response.decode('ascii').split(';')
+            response = response[0].replace("\n\n\nBook Location:" + self.hex + "-w" + str(self.wall)
+                                           + "-s" + str(self.shelf) + "-v" + str(self.volume) + "\n", "")
+            response = response.split("\n", 2)[2]
+            bar()
+
         return response
 
     def search_shelf_for_words(self, hex, wall, shelf):
