@@ -203,19 +203,24 @@ class Babel:
             for word in word_list:
                 if len(word) > self.word_list_longest_word_length:
                     self.word_list_longest_word_length = len(word)
-                first_char = word[:1]
-                if first_char in word_dict:
-                    word_dict[first_char].append(word)
+                first_chars = word[:3]
+                if first_chars in word_dict:
+                    word_dict[first_chars].append(word)
                 else:
-                    word_dict[first_char] = [word]
+                    word_dict[first_chars] = [word]
 
         return word_dict
 
     def words_in_string(self, a_string):
         # takes any string and compares it to the word list to see if there is a matching word
         a_string = a_string.strip()
-        first_char = a_string[:1]
-        return set(self.word_list[first_char]).intersection(a_string.split())
+        first_chars = a_string[:3]
+        try:
+            words_found = set(self.word_list[first_chars]).intersection(a_string.split())
+        except:
+            words_found = None
+
+        return words_found
 
     def calculate_next_book(self):
         self.volume = int(self.volume)
