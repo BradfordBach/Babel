@@ -72,13 +72,13 @@ class Babel:
             consecutive_words, largest_words = self.find_words()
             stats = self.get_max_consecutive_words_for_book(consecutive_words)
             print("Book Location: " + self.get_book_location(),
-                  "\nBook Title: " + '\x1B[3m' + str(self.title) + '\x1B[0m'
-                  "\nMax word sets on a single page: " + str(stats.max_word_sets)
-                  + " (pg. " + str(stats.max_word_sets_page_num) + ")",
-                  "| Maximum consecutive words on a page: " + str(stats.max_consecutive_words)
-                  + " (pg." + str(stats.max_consecutive_words_page_num) + ")",
-                  "| Longest consecutive word group: " + str(stats.word_list)
-                  + " (pg." + str(stats.word_list_page_num) + ")")
+                  "\nBook Title: " + '\x1B[3m' + str(self.title) + '\x1B[0m',
+                  "\nMax word sets on a single page: "
+                  + str(stats.max_word_sets) + " (pg. " + str(stats.max_word_sets_page_num) + ")",
+                  "| Maximum consecutive words on a page: "
+                  + str(stats.max_consecutive_words) + " (pg." + str(stats.max_consecutive_words_page_num) + ")",
+                  "| Longest consecutive word group: "
+                  + str(stats.word_list) + " (pg." + str(stats.word_list_page_num) + ")")
             print("Largest words:")
             if len(largest_words) > 1:
                 for word in largest_words:
