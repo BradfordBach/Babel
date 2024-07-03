@@ -6,6 +6,7 @@ from collections import Counter
 from alive_progress import alive_bar
 import storage
 import generators
+import bookstats
 
 
 class Babel:
@@ -68,19 +69,22 @@ class Babel:
     def search_shelf_for_words(self, hex, wall, shelf):
         while self.volume <= 32 and self.shelf == shelf and not self.hex_complete:
             self.parse_book_string(self.download_book(hex, wall, shelf))
-            largest_words = self.find_consecutive_words()
-            #consecutive_words, word_sets, word_list = self.get_max_consecutive_words_for_book(found_words)
+            consecutive_words, largest_words = self.find_words()
+            stats = self.get_max_consecutive_words_for_book(consecutive_words)
             print("Book Location: " + self.get_book_location(),
-                  "\nBook Title: " + '\x1B[3m' + str(self.title) + '\x1B[0m')
-                  #"\nConsecutive words: " + str(consecutive_words),
-                  #"| Word sets: " + str(word_sets),
-                  #"| Word list: " + str(word_list),
+                  "\nBook Title: " + '\x1B[3m' + str(self.title) + '\x1B[0m'
+                  "\nMax word sets on a single page: " + str(stats.max_word_sets)
+                  + " (pg. " + str(stats.max_word_sets_page_num) + ")",
+                  "| Maximum consecutive words on a page: " + str(stats.max_consecutive_words)
+                  + " (pg." + str(stats.max_consecutive_words_page_num) + ")",
+                  "| Longest consecutive word group: " + str(stats.word_list)
+                  + " (pg." + str(stats.word_list_page_num) + ")")
             print("Largest words:")
             if len(largest_words) > 1:
                 for word in largest_words:
-                    print("pg. " + str(word[0]) + ": " + str(word[1]), end=" | ")
+                    print("pg." + str(word[0]) + ": " + str(word[1]), end=" | ")
             else:
-                print("pg. " + str(largest_words[0][0]) + ": " + str(largest_words[0][1]), end="")
+                print("pg." + str(largest_words[0][0]) + ": " + str(largest_words[0][1]), end="")
 
             print("\n")
             self.calculate_next_book()
@@ -123,10 +127,11 @@ class Babel:
             self.book_text.append(book[current_page * 3200 - 3200: current_page * 3200])
             current_page += 1
 
-    def find_consecutive_words(self):
+    def find_words(self):
 
         self.title_id = storage.handle_sql_title(self.title, self.hex_id, self.hex,
                                                  self.wall, self.shelf, self.volume)
+        consecutive_words = []
         book_largest_word = []
         for page_number, page_text in enumerate(self.book_text, start=1):
 
@@ -134,6 +139,7 @@ class Babel:
 
             if page_info["Largest words"]:
                 if page_info["Consecutive count"] > 1:
+                    consecutive_words.append(page_info)
                     storage.handle_sql_consecutive_words(self.title_id, page_info)
                 if len(page_info["Largest words"][0]) > 2:
                     storage.sql_largest_word_on_page(self.title_id, page_number, page_info["Largest words"])
@@ -150,7 +156,7 @@ class Babel:
                         break
 
         storage.sql_call_commit()
-        return book_largest_word
+        return consecutive_words, book_largest_word
 
     def search_page_for_words(self, page_number, page_text, split_type="space"):
         # Lowest level function for searching for words on a single page, returns a dict of the page number,
@@ -277,28 +283,43 @@ class Babel:
             self.page = 1
 
     def get_max_consecutive_words_for_book(self, found_words):
-        max_consecutive_words = 0
-        max_word_sets = 0
-        word_list = []
+        book = bookstats.BookStats()
         for page in found_words:
-            if len(page["Consecutive word sets"]) > max_word_sets:
-                max_word_sets = len(page["Consecutive word sets"])
-            if int(page["Consecutive count"]) > max_consecutive_words:
-                max_consecutive_words = page["Consecutive count"]
-                word_list = page["Consecutive word sets"]
-            elif int(page["Consecutive count"]) == max_consecutive_words:
-                for word_set in word_list:
-                    original_list_len = 0
-                    for word in word_set:
-                        original_list_len += len(word)
-                for new_word_set in page["Consecutive word sets"]:
-                    new_list_len = 0
-                    for new_word in new_word_set:
-                        new_list_len += len(new_word)
-                if original_list_len < new_list_len:
-                    word_list = page["Consecutive word sets"]
+            if page["Consecutive word sets"] == self.return_longest_string_list(book.word_list, page["Consecutive word sets"]):
+                longest_word_set = book.word_list
+                for word_set in page["Consecutive word sets"]:
+                    if word_set == self.return_longest_string_list(word_set, longest_word_set):
+                        longest_word_set = word_set
+                        book.word_list_page_num = page["Page number"]
+                book.word_list = longest_word_set
+            if len(page["Consecutive word sets"]) > book.max_word_sets:
+                book.max_word_sets = len(page["Consecutive word sets"])
+                book.max_word_sets_page_num = page["Page number"]
+            if int(page["Consecutive count"]) > book.max_consecutive_words:
+                book.max_consecutive_words = page["Consecutive count"]
+                book.max_consecutive_words_page_num = page["Page number"]
 
-        return max_consecutive_words, max_word_sets, word_list
+        return book
+
+    def return_longest_string_list(self, list1, list2):
+        largest_sublist1 = 0
+        largest_sublist2 = 0
+        for sub_list in list1:
+            list1_len = self.list_string_length(sub_list)
+            if list1_len > largest_sublist1:
+                largest_sublist1 = list1_len
+        for sub_list in list2:
+            list2_len = self.list_string_length(sub_list)
+            if list2_len > largest_sublist2:
+                largest_sublist2 = list2_len
+        return list1 if largest_sublist1 > largest_sublist2 else list2
+
+
+    def list_string_length(self, given_list):
+        string_length = 0
+        for string in given_list:
+            string_length += len(string)
+        return string_length
 
     def get_wall_titles(self, hex, wall, shelf, volume=False):
         url = 'https://libraryofbabel.info/titler.cgi?'
