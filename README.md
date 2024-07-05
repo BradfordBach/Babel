@@ -23,16 +23,31 @@ discovery, and to otherwise amuse myself by coding. I never intended the code to
 interest in using such a program, I have decided to make steps to get it out in the open. 
 
 There will be frequent changes in the coming weeks/months as I work on getting this repository to be public facing, and 
-to make it more user-friendly in general. As such, instructions to run this program will be forthcoming, ~~since as of now
-it requires setting up a MySQL database to run.~~
+to make it more user-friendly in general.
 
 ## Roadmap
 
-0. Code cleanup and refactoring
-1. Allow for easy running of scripts for non-technical users. ~~This will likely include a way to store results that does 
+0. ~~Code cleanup and refactoring~~
+1. ~~Allow for easy running of scripts for non-technical users. This will likely include a way to store results that does 
 not require MySQL.~~
 2. Better reporting in general, ideally with some fancy local website creation, or something to that effect.
 3. More search options
+
+
+# Program setup
+1. Download and install Python 3.12.4
+2. Ideally create a virtual environment with venv (this makes it so if you ever do other python work, required modules
+stay only with this venv) and activate it
+3. Download this codebase, navigate to it, and run `pip install -r requirements.txt`
+
+# Getting started
+0. For best results if using Windows, run in Powershell.
+1. To run the program against a random single hex simply type `python runbabel.py -f`
+2. To specify which hex to run against type `python runbabel.py specifiedhex -f`, Note: Hexes can only be alphanumeric
+3. Throughout the run the results will be displayed in the console window, and also stored in a SQLite database called
+babel.db located in the root directory of the program, this db can be accessed with any Sqllite workbench, such as
+SQLitestudio: https://sqlitestudio.pl/
+
 
 
 
