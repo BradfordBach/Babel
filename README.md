@@ -1,7 +1,8 @@
 # Library of Babel crawler
 
+![](https://i.imgur.com/a0YUty2.png)
 A native python program that uses the API of libraryofbabel.info and parses and stores interesting findings from the 
-near infinate collection of books.
+near infinite collection of books.
 
 ## Context about the Library of Babel and this repository
 Based off a short story by Jorge Luis Borges, The Library of Babel imagines a library of every possible book that has
@@ -14,7 +15,7 @@ EXTREMELY unlikely you will find anything on your own.
 
 This program attempts to automate the process of looking through millions of books of gibberish. It will first download
 a book using an API call to directly download it, then using an english language word list, it will search
-through hexes and provide output via the console window as well as into a SQLite database. It primarily searches 
+through each book and provide output via the console window and into a SQLite database. It primarily searches 
 for words that are next to each other, while also keeping track of the largest word it found.
 
 ## Developer notes:
