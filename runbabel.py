@@ -10,6 +10,11 @@ args = parser.parse_args()
 if args.full:
     b = babel.Babel()
     if args.hex:
-        b.search_hex(hex=args.hex[0])
+        if args.hex[0].isalnum():  # make sure hex name is only alphanumeric
+            hex_name = args.hex[0].lower()
+            b.search_hex(hex=hex_name)
+        else:
+            print("Hex name can only include numbers and letters with no special characters or spaces")
+            exit()
     else:
         b.search_hex()
