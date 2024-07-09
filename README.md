@@ -56,7 +56,7 @@ wall 3, shelf 2 and volume 4 of hex 'specifiedhex' by typing `python runbabel.py
 You can view a generated website with your findings by `python runbabel.py --results`, which will create a local
 website viewable at `http://127.0.0.1:8050/`  An example of this output is shown below.
 
-<img src="https://i.imgur.com/F1gyA4B.png" width="50%" height="50%">
+<img src="https://i.imgur.com/qqjtBbs.png" width="50%" height="50%">
 
 
 

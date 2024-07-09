@@ -2,7 +2,7 @@ from dash import Dash, html, dash_table, dcc
 import pandas as pd
 import plotly.express as px
 import sqlite3
-
+import logging
 
 def run_sql_with_query():
     conn = sqlite3.connect('babel.db')
@@ -156,7 +156,8 @@ def run_sql_with_query():
     style = {'marginBottom': 50, 'marginTop': 25},
     )
 
-    app.run(debug=True)
+    logging.getLogger('werkzeug').setLevel(logging.ERROR)
+    app.run(debug=False)
 
 def words_table(data_variable):
     return dash_table.DataTable(data=data_variable.to_dict('records'), sort_action="native",
