@@ -6,7 +6,7 @@ cur = db.cursor()
 
 
 def create_sql_tables():
-    cur.execute("CREATE TABLE IF NOT EXISTS hexes(hex_name)")
+    cur.execute("CREATE TABLE IF NOT EXISTS hexes(rowid INTEGER PRIMARY KEY, hex_name)")
     cur.execute("CREATE TABLE IF NOT EXISTS titles(rowid INTEGER PRIMARY KEY, title, hex, wall, shelf, volume)")
     cur.execute("""CREATE TABLE IF NOT EXISTS consecutive_words(rowid INTEGER PRIMARY KEY, title_id, page_num,
                     num_consecutive_words, num_word_sets, words)""")
