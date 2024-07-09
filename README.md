@@ -18,7 +18,7 @@ a book using an API call to directly download it, then using an english language
 through each book and provide output via the console window and into a SQLite database. It primarily searches 
 for words that are next to each other, while also keeping track of the largest word it found.
 
-## Developer notes:
+## Developer notes
 I've been casually working on this for many years as a way to improve my own coding skills, to fill my fanciful need for
 discovery, and to otherwise amuse myself by coding. I never intended the code to be public, but since others have shown
 interest in using such a program, I have decided to make steps to get it out in the open. 
@@ -31,7 +31,7 @@ to make it more user-friendly in general.
 0. ~~Code cleanup and refactoring~~
 1. ~~Allow for easy running of scripts for non-technical users. This will likely include a way to store results that does 
 not require MySQL.~~
-2. Better reporting in general, ideally with some fancy local website creation, or something to that effect.
+2. ~~Better reporting in general, ideally with some fancy local website creation, or something to that effect.~~
 3. More search options
 
 
@@ -49,6 +49,14 @@ stay only with this venv) and activate it
 babel.db located in the root directory of the program, this db can be accessed with any Sqllite workbench, such as
 SQLitestudio: https://sqlitestudio.pl/
 
+# Other options
+Specific location start can with the flags --wall, --shelf and --volume or -w, -s and -v. For example to start at 
+wall 3, shelf 2 and volume 4 of hex 'specifiedhex' by typing `python runbabel.py specifiedhex -f -w 3 -s 2 -v 4`
+
+You can view a generated website with your findings by `python runbabel.py --results`, which will create a local
+website viewable at `http://127.0.0.1:8050/`  An example of this output is shown below.
+
+<img src="https://i.imgur.com/F1gyA4B.png" width="50%" height="50%">
 
 
 
