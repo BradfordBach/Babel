@@ -43,7 +43,8 @@ def run_sql_with_query():
                             from page_words as p
                             join titles as t on p.title_id=t.rowid
                             join hexes as h on t.hex=h.rowid
-                            where p.length = ?"""}
+                            where p.length = ?
+                            order by p.rowid desc"""}
 
     totals = pd.read_sql_query(sql["totals"], conn).to_dict('records')[0]
     total_words = pd.read_sql_query(sql["total_words"], conn).to_dict('records')
