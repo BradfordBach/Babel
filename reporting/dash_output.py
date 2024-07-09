@@ -33,10 +33,12 @@ def run_sql_with_query():
                "most_consec_words": """select num_consecutive_words as amount from consecutive_words as c
                         where amount = (SELECT max(num_consecutive_words) from consecutive_words)
                         group by amount;""",
-               "hex_completion": """select count(*) as Books_Searched, h.hex_name from hexes as h
+               "hex_completion": """select (count(*) / 640.0) * 100.0 as Percent_Complete, h.hex_name as Hex_Name from hexes as h
                         join titles as t on h.rowid = t.hex
                         group by t.hex
-                        order by Books_Searched desc;""",
+                        having count(*) < 640
+                        order by Percent_Complete desc
+                        limit 15;""",
                "words_markup": """ select "[" || p.word || "](" || "https://libraryofbabel.info/book.cgi?" || h.hex_name 
                             || "-w" || t.wall || "-s" || t.shelf || "-v" || printf('%02d', t.volume) || ":" 
                             || p.page_num || ")" as word_markup, t.title, h.hex_name, p.page_num
@@ -145,7 +147,11 @@ def run_sql_with_query():
             words_table(largest_words2),
             html.H2(children=str(longest_word["length"] - 2) + " characters"),
             words_table(largest_words3),
-            dcc.Graph(figure=px.bar(hex_completion, x='hex_name', y='Books_Searched'))
+            dcc.Graph(figure=px.bar(hex_completion, title='Un-completed hexes', x='Hex_Name', y='Percent_Complete'),
+                      style={
+                          'width': 1400,
+                          'height': 600
+                      })
         ],
     style = {'marginBottom': 50, 'marginTop': 25},
     )
