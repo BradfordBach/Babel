@@ -1,6 +1,6 @@
 # Library of Babel crawler
 
-![](https://i.imgur.com/a0YUty2.png)
+![](https://i.imgur.com/skjkwPk.gif)
 A native python program that uses the API of libraryofbabel.info and parses and stores interesting findings from the 
 near infinite collection of books.
 
