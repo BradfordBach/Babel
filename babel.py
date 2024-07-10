@@ -133,27 +133,31 @@ class Babel:
                                                  self.wall, self.shelf, self.volume)
         consecutive_words = []
         book_largest_word = []
-        for page_number, page_text in enumerate(self.book_text, start=1):
+        with alive_bar(410, title=self.get_book_location()) as bar:
+            for page_number, page_text in enumerate(self.book_text, start=1):
 
-            page_info = self.search_page_for_words(page_number, page_text, split_type="space")
+                page_info = self.search_page_for_words(page_number, page_text, split_type="space")
 
-            if page_info["Largest words"]:
-                if page_info["Consecutive count"] > 1:
-                    consecutive_words.append(page_info)
-                    storage.handle_sql_consecutive_words(self.title_id, page_info)
-                if len(page_info["Largest words"][0]) > 2:
-                    storage.sql_largest_word_on_page(self.title_id, page_number, page_info["Largest words"])
+                if page_info["Largest words"]:
+                    if page_info["Consecutive count"] > 1:
+                        consecutive_words.append(page_info)
+                        storage.handle_sql_consecutive_words(self.title_id, page_info)
+                    if len(page_info["Largest words"][0]) > 2:
+                        storage.sql_largest_word_on_page(self.title_id, page_number, page_info["Largest words"])
 
-                for word in page_info["Largest words"]:
-                    if not book_largest_word:
-                        book_largest_word.append((page_number, word))
-                    elif len(book_largest_word[0][1]) == len(word):
-                        book_largest_word.append((page_number, word))
-                    elif len(book_largest_word[0][1]) < len(word):
-                        book_largest_word.clear()
-                        book_largest_word.append((page_number, word))
-                    else:
-                        break
+                    for word in page_info["Largest words"]:
+                        if not book_largest_word:
+                            book_largest_word.append((page_number, word))
+                        elif len(book_largest_word[0][1]) == len(word):
+                            book_largest_word.append((page_number, word))
+                        elif len(book_largest_word[0][1]) < len(word):
+                            book_largest_word.clear()
+                            book_largest_word.append((page_number, word))
+                        else:
+                            break
+                bar.text(self.title)
+                bar()
+
 
         storage.sql_call_commit()
         return consecutive_words, book_largest_word
